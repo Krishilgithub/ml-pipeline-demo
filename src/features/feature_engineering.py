@@ -4,7 +4,7 @@ import os
 import yaml
 import logging
 from typing import Tuple, Dict, Any
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -43,23 +43,23 @@ def clean_data(df: pd.DataFrame, column: str = 'content') -> pd.DataFrame:
         logger.error(f"Error cleaning data: {str(e)}")
         raise
 
-def apply_bow(X: np.ndarray, max_features: int) -> Tuple[np.ndarray, CountVectorizer]:
+def apply_tfidf(X: np.ndarray, max_features: int) -> Tuple[np.ndarray, TfidfVectorizer]:
     """Apply Bag of Words transformation using CountVectorizer."""
     try:
-        vectorizer = CountVectorizer(max_features=max_features)
-        X_bow = vectorizer.fit_transform(X)
+        vectorizer = TfidfVectorizer(max_features=max_features)
+        X_tfidf = vectorizer.fit_transform(X)
         logger.info("Successfully applied Bag of Words transformation")
-        return X_bow, vectorizer
+        return X_tfidf, vectorizer
     except Exception as e:
         logger.error(f"Error applying Bag of Words: {str(e)}")
         raise
 
-def transform_bow(X: np.ndarray, vectorizer: CountVectorizer) -> np.ndarray:
+def transform_tfidf(X: np.ndarray, vectorizer: TfidfVectorizer) -> np.ndarray:
     """Transform data using a fitted CountVectorizer."""
     try:
-        X_bow = vectorizer.transform(X)
+        X_tfidf = vectorizer.transform(X)
         logger.info("Successfully transformed data with Bag of Words")
-        return X_bow
+        return X_tfidf
     except Exception as e:
         logger.error(f"Error transforming data with Bag of Words: {str(e)}")
         raise
@@ -91,16 +91,16 @@ def main() -> None:
         X_test = test_data['content'].values
         y_test = test_data['sentiment'].values
         
-        X_train_bow, vectorizer = apply_bow(X_train, max_features)
-        X_test_bow = transform_bow(X_test, vectorizer)
+        X_train_tfidf, vectorizer = apply_tfidf(X_train, max_features)
+        X_test_tfidf = transform_tfidf(X_test, vectorizer)
         
-        train_df = pd.DataFrame(X_train_bow.toarray())
+        train_df = pd.DataFrame(X_train_tfidf.toarray())
         train_df['label'] = y_train
-        test_df = pd.DataFrame(X_test_bow.toarray())
+        test_df = pd.DataFrame(X_test_tfidf.toarray())
         test_df['label'] = y_test
         
-        save_data(train_df, os.path.join("data", "features", "train_bow.csv"))
-        save_data(test_df, os.path.join("data", "features", "test_bow.csv"))
+        save_data(train_df, os.path.join("data", "features", "train_tfidf.csv"))
+        save_data(test_df, os.path.join("data", "features", "test_tfidf.csv"))
     except Exception as e:
         logger.error(f"Error in main execution: {str(e)}")
         raise
